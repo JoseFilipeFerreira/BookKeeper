@@ -35,23 +35,9 @@ async def on_message(message):
 	await bot.process_commands(message)
 
 @bot.command(pass_context=True)
-async def save(ctx, number):
-    appInfo = await bot.application_info()
-    if ctx.message.author == appInfo.owner:
-        await bot.delete_message(ctx.message)
-        number = int(number)
-
-        with open("message.txt", "a") as f:
-            async for x in bot.logs_from(ctx.message.channel, limit = number):
-                if x.content != "":
-                    msg = x.content
-                    msg.replace('\n', '.')
-                    msg.replace('@', '(a)')
-                    f.write(x.content + '\n')
-
-@bot.command(pass_context=True)
 async def saver(ctx, name):
     appInfo = await bot.application_info()
+    nSaved = 0
     if ctx.message.author == appInfo.owner:
         await bot.change_presence(game=discord.Game(name='snooping arround'))
         await bot.delete_message(ctx.message)
@@ -65,19 +51,19 @@ async def saver(ctx, name):
                     size += 1
                     if x.content != "":
                         msg = x.content
-                        msg.replace('\n', '.')
-                        msg.replace('@', '(a)')
                         f.write(x.content + '\n')
                     lastMessage = x
-                print(size)
+                nSaved += size
+                print(nSaved)
         await bot.change_presence(game=discord.Game(name='-generate'))
+    else:
+        await bot.say("Invalid User")
                 
 
 @bot.command(pass_context=True)
 async def generate(ctx):
     global text_model
     msg = text_model.make_sentence(tries = 100)
-    msg.replace('@', '(a)')
-    await bot.say(msg)
+    await bot.say(msg.replace("@", "(a)"))
 
 main()
