@@ -40,30 +40,40 @@ async def on_ready():
 async def on_message(message):
 	await bot.process_commands(message)
 
+
 @bot.command(pass_context=True)
 async def saver(ctx, name):
+#dowload all messages from a discord server
     appInfo = await bot.application_info()
-    nSaved = 0
-    if ctx.message.author == appInfo.owner:
-        await bot.change_presence(game=discord.Game(name='snooping arround'))
-        await bot.delete_message(ctx.message)
+    if ctx.message.author != appInfo.owner:
+        bot.say("Invalid User!")
+        return
+    await bot.delete_message(ctx.message)
+    
+    saved  = []
+    channels = ctx.message.server.channels
+    for channel in channels:
+        print(channel.name)
+        nSaved = 0
         size = 100
         lastMessage = None
-        with open("{}.txt".format(name), "a") as f:
-            while size == 100:
-                messages = bot.logs_from(ctx.message.channel,before = lastMessage, limit = 100)
-                size = 0             
-                async for x in messages:
-                    size += 1
-                    if x.content != "":
-                        msg = x.content
-                        f.write(x.content + '\n')
-                    lastMessage = x
-                nSaved += size
-                print(nSaved)
-        await bot.change_presence(game=discord.Game(name='-generate'))
-    else:
-        await bot.say("Invalid User")
+        while size == 100:
+            messages = bot.logs_from(
+                channel,
+                before = lastMessage,
+                limit = 100)
+            size = 0
+            async for x in messages:
+                size += 1
+                if x.content != "":
+                    saved.append(x.content)
+                lastMessage = x
+            nSaved += size
+            print(nSaved)
+
+    with open("{}.txt".format(name), "a") as f:
+        for q in saved:
+            f.write(q + '\n')
 
 @bot.command(pass_context=True)
 async def generate(ctx):
